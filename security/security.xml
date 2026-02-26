@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="employee_operations_privilege" model="res.groups.privilege">
+            <field name="name">Employee Operations</field>
+        </record>
+
+        <record id="employee_user_group" model="res.groups">
+            <field name="name">Employee</field>
+            <field name="privilege_id" ref="employee_operations.employee_operations_privilege"/>
+        </record>
+
+        <record id="team_leader_user_group" model="res.groups">
+            <field name="name">Team Leader</field>
+            <field name="privilege_id" ref="employee_operations.employee_operations_privilege"/>
+        </record>
+
+        <record id="manager_user_group" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="privilege_id" ref="employee_operations.employee_operations_privilege"/>
+        </record>
+
+        <record id="finance_manager_user_group" model="res.groups">
+            <field name="name">Finance Manager</field>
+            <field name="privilege_id" ref="employee_operations.employee_operations_privilege"/>
+        </record>
+    </data>
+</odoo>

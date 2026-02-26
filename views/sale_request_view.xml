@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="sale_request_view_list" model="ir.ui.view">
+            <field name="name">sale request list</field>
+            <field name="model">internal.sale.request</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="employee_id"/>
+                    <field name="amount"/>
+                    <field name="state"/>
+                    <field name="approval_level"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="sale_request_view_form" model="ir.ui.view">
+            <field name="name">sale request form</field>
+            <field name="model">internal.sale.request</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_submitted" type="object" class="btn-secondary" string="Submit" invisible="state != 'draft'"/>
+                        <button name="action_approved" type="object" class="btn-success" string="Approve" invisible="state != 'submitted'"/>
+                        <button name="action_rejected" type="object" class="btn-danger" string="Reject" invisible="state != 'submitted'"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft, submitted, approved"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h2>
+                                <field name="name"/>
+                            </h2>
+                        </div>
+                        <group>
+                            <group string="General Info">
+                                <field name="employee_id"/>
+                                <field name="amount"/>
+                                <field name="reason"/>
+                                <field name="state"/>
+                            </group>
+                            <group string="Additional Info">
+                                <field name="approval_level"/>
+                                <field name="approved_by_id"/>
+                                <field name="approval_date"/>
+                                <field name="manager_comment"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="sale_request_view_kanban" model="ir.ui.view">
+            <field name="name">sale request kanban</field>
+            <field name="model">internal.sale.request</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="name"/>
+                    <field name="employee_id"/>
+                    <field name="amount"/>
+                    <field name="approval_level"/>
+                    <templates>
+                        <t t-name="card">
+                            <h4>
+                                <field name="name"/>
+                            </h4>
+                            <div>
+                                <field name="employee_id"/>
+                            </div>
+                            <div>
+                                Amount:
+                                <field name="amount"/>
+                            </div>
+                            <div>
+                                Level:
+                                <field name="approval_level"/>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="sale_request_view_search" model="ir.ui.view">
+            <field name="name">sale request search</field>
+            <field name="model">internal.sale.request</field>
+            <field name="arch" type="xml">
+                <search>
+                    <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_approval_level" string="Approval Level" context="{'group_by': 'approval_level'}"/>
+<!--                    <filter name="group_approval_date" string="Approval Date" context="{'group_by': 'date:month:approval_date'}"/>-->
+                    <filter name="group_approval_date" string="Approval Date" context="{'group_by': 'approval_month'}"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="sale_request_view_pivot" model="ir.ui.view">
+            <field name="name">sale request pivot</field>
+            <field name="model">internal.sale.request</field>
+            <field name="arch" type="xml">
+                <pivot>
+                    <field name="amount" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="sale_request_action" model="ir.actions.act_window">
+            <field name="name">Sale Request</field>
+            <field name="res_model">internal.sale.request</field>
+            <field name="context">{'search_default_group_state': 1}</field>
+        </record>
+    </data>
+</odoo>

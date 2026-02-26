@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <menuitem id="employee_operations_root_menu" name="Employee Operations"/>
+        <menuitem id="employee_task_menu" name="Tasks" parent="employee_operations_root_menu" action="employee_task_action"/>
+        <menuitem id="sale_request_menu" name="Sale Request" parent="employee_operations_root_menu" action="sale_request_action"/>
+    </data>
+</odoo>

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_employee_task,access_employee_task,model_employee_task,,1,1,1,1
+access_internal_sale_request,access_internal_sale_request,model_internal_sale_request,,1,1,1,1
+access_hr_employee,access_hr_employee,model_hr_employee,,1,1,1,1
