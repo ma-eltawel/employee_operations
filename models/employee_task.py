@@ -1,3 +1,5 @@
+from markupsafe import Markup
+
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -30,7 +32,7 @@ class EmployeeTask(models.Model):
     estimated_hours = fields.Float()
     actual_hours = fields.Float()
     progress = fields.Integer(compute='_compute_progress')
-    is_late = fields.Boolean(compute='_compute_is_late')
+    is_late = fields.Boolean(compute='_compute_is_late', store=1)
     parent_task_id = fields.Many2one('employee.task', ondelete='cascade')
     child_task_ids = fields.One2many('employee.task', 'parent_task_id')
     company_id = fields.Many2one('res.company')
@@ -41,9 +43,10 @@ class EmployeeTask(models.Model):
         for rec in self:
             rec.progress = (rec.actual_hours / rec.estimated_hours) * 100 if rec.estimated_hours else 0.0
 
+    @api.depends('state', 'deadline')
     def _compute_is_late(self):
         for rec in self:
-            rec.is_late = 1 if rec.deadline < fields.Date.today() and rec.state != 'done' else 0
+            rec.is_late = rec.deadline < fields.Date.today() and rec.state != 'done'
 
     def action_in_progress(self):
         for rec in self:
@@ -51,8 +54,8 @@ class EmployeeTask(models.Model):
 
     def action_done(self):
         for rec in self:
-            if not rec.actual_hours:
-                raise ValidationError('Actual hours cannot be zero!')
+            if rec.actual_hours < 1:
+                raise ValidationError('Actual hours cannot be less than 1!')
             rec.state = 'done'
 
     def action_canceled(self):
@@ -85,4 +88,28 @@ class EmployeeTask(models.Model):
                 )
 
     def monthly_scheduled_job(self):
-        pass
+        today = fields.Date.today()
+        first_day = today.replace(day=1)
+        employees = self.search([])
+        for employee in employees:
+            task_count = self.env['employee.task'].search_count([
+                ('employee_id', '=', employee.id),
+                ('create_date', '>=', first_day)
+            ])
+            request_count = self.env['internal.sale.request'].search_count([
+                ('employee_id', '=', employee.id),
+                ('create_date', '>=', first_day)
+            ])
+            if not task_count and not request_count:
+                continue
+            message = Markup(f"""
+                <b>Monthly Summary ({today.strftime('%B %Y')})</b>
+                <ul>
+                    <li>Tasks created: <b>{task_count}</b></li>
+                    <li>Sales Requests: <b>{request_count}</b></li>
+                </ul>
+            """)
+            employee.message_post(
+                body = message,
+                subtype_xmlid = "mail.mt_note"
+            )

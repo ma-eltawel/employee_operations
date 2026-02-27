@@ -2,13 +2,38 @@
 <odoo>
     <data>
         <record id="view_employee_form_inherit" model="ir.ui.view">
-            <field name="name">view employee form</field>
+            <field name="name">view employee form inherit</field>
             <field name="model">hr.employee</field>
             <field name="inherit_id" ref="hr.view_employee_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='job_id']" position="after">
-                    <field name="task_count"/>
+                <xpath expr="//form//div[@name='button_box']" position="inside">
+                    <button name="action_open_employee_task" type="object" class="oe_stat_button" icon="fa-list-alt">
+                        <div class="o_stat_info">
+                            Tasks
+                            <span class="o_stat_value">
+                                <field name="task_count"/>
+                            </span>
+                        </div>
+                    </button>
                 </xpath>
+            </field>
+        </record>
+
+        <record id="employee_task_wizard_view_form" model="ir.ui.view">
+            <field name="name">employee task wizard form</field>
+            <field name="model">employee.task.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Employee Tasks">
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="task_count"/>
+                        <field name="late_task_count"/>
+                        <field name="request_count"/>
+                    </group>
+                    <footer>
+                        <button string="Close" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </form>
             </field>
         </record>
     </data>
