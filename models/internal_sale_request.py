@@ -1,5 +1,5 @@
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, AccessError
 
 
 class InternalSalesRequest(models.Model):
@@ -21,8 +21,8 @@ class InternalSalesRequest(models.Model):
         ('department_manager', 'Department Manager'),
         ('finance_manager', 'Finance Manager')
     ],compute='_compute_approval_level')
-    approved_by_id = fields.Many2one('res.users')
-    approval_date = fields.Datetime()
+    approved_by_id = fields.Many2one('res.users', readonly=1)
+    approval_date = fields.Datetime(readonly=1)
     approval_month = fields.Char(compute='_compute_approval_month', store=1)
     manager_comment = fields.Text()
 
@@ -41,10 +41,19 @@ class InternalSalesRequest(models.Model):
             rec.state = 'submitted'
 
     def action_approved(self):
+        user = self.env.user
         for rec in self:
+            if rec.approval_level == 'manager':
+                if not user.has_group('employee_operations.group_manager'):
+                    raise AccessError("Invalid approval level!")
+            elif rec.approval_level == 'finance_manager':
+                if not user.has_group('employee_operations.group_finance_manager'):
+                    raise AccessError("Invalid approval level!")
+            else:
+                raise AccessError("Invalid approval level!")
             rec.write({
                 'state': 'approved',
-                'approved_by_id': self.env.user.id,
+                'approved_by_id': user.id,
                 'approval_date': fields.Datetime.now()
             })
 

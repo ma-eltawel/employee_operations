@@ -57,29 +57,29 @@ class EmployeeTask(models.Model):
         for rec in self:
             if rec.actual_hours < 1:
                 raise ValidationError('Actual hours cannot be less than 1!')
-            if rec.parent_task_id:
-                if all(t.state == 'done' for t in rec.parent_task_id.child_task_ids):
-                    rec.parent_task_id.state = 'done'
+            if rec.child_task_ids:
+                if any(child.state != 'done' for child in rec.child_task_ids):
+                    raise ValidationError('All sub-tasks not Done yet!')
             rec.state = 'done'
+            if rec.parent_task_id:
+                rec.parent_task_id._check_and_complete_parent()
 
     def action_canceled(self):
         for rec in self:
             rec.state = 'canceled'
 
-    # @api.depends('child_task_ids.state')
-    # def _check_parent_done(self):
-    #     for rec in self:
-    #         if rec.state == 'in_progress' and rec.child_task_ids and all(child.state == 'done' for child in rec.child_task_ids):
-    #             rec.state = 'done'
-    #
-    # def write(self, vals):
-    #     res = super(EmployeeTask, self).write(vals)
-    #     for rec in self:
-    #         if rec.parent_task_id and rec.parent_task_id.state == 'in_progress':
-    #             parent = rec.parent_task_id
-    #             if parent.child_task_ids and all(c.state == 'done' for c in parent.child_task_ids):
-    #                 parent.state = 'done'
-    #     return res
+    def check_and_complete_parent(self):
+        for rec in self:
+            if rec.child_task_ids and rec.state == 'in_progress' and all(child.state == 'done' for child in rec.child_task_ids):
+                rec.state = 'done'
+
+    def write(self, vals):
+        res = super().write(vals)
+        parents = self.mapped('parent_task_id')
+        if parents:
+            parents._check_and_complete_parent()
+
+        return res
 
     def daily_scheduled_job(self):
         late_tasks = self.search([('is_late', '=', 1)])
