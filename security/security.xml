@@ -13,16 +13,64 @@
         <record id="team_leader_user_group" model="res.groups">
             <field name="name">Team Leader</field>
             <field name="privilege_id" ref="employee_operations.employee_operations_privilege"/>
+            <field name="implied_ids" eval="[(4, ref('employee_user_group'))]"/>
         </record>
 
         <record id="manager_user_group" model="res.groups">
             <field name="name">Manager</field>
             <field name="privilege_id" ref="employee_operations.employee_operations_privilege"/>
+            <field name="implied_ids" eval="[(4, ref('team_leader_user_group'))]"/>
         </record>
 
         <record id="finance_manager_user_group" model="res.groups">
             <field name="name">Finance Manager</field>
             <field name="privilege_id" ref="employee_operations.employee_operations_privilege"/>
+            <field name="implied_ids" eval="[(4, ref('employee_operations_privilege'))]"/>
+        </record>
+
+        <record id="employee_own_tasks_rule" model="ir.rule">
+            <field name="name">Employee Own Tasks</field>
+            <field name="model_id" ref="model_employee_task"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('employee_user_group'))]"/>
+        </record>
+
+        <record id="employee_own_requests_rule" model="ir.rule">
+            <field name="name">Employee Own Requests</field>
+            <field name="model_id" ref="model_internal_sale_request"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('employee_user_group'))]"/>
+        </record>
+
+        <record id="team_leader_rule" model="ir.rule">
+            <field name="name">Team Leader Rule</field>
+            <field name="model_id" ref="model_employee_task"/>
+            <field name="domain_force">
+                ['|', ('employee_id.user_id', '=', user.id),
+                    ('employee_id.parent_id.user_id', '=', user.id)]
+            </field>
+            <field name="groups" eval="[(4, ref('team_leader_user_group'))]"/>
+        </record>
+
+        <record id="manager_tasks_rule" model="ir.rule">
+            <field name="name">Manager All Tasks</field>
+            <field name="model_id" ref="model_employee_task"/>
+            <field name="domain_force">[(1, '=' ,1)]</field>
+            <field name="groups" eval="[(4, ref('manager_user_group'))]"/>
+        </record>
+
+        <record id="manager_requests_rule" model="ir.rule">
+            <field name="name">Manager All Requests</field>
+            <field name="model_id" ref="model_internal_sale_request"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('manager_user_group'))]"/>
+        </record>
+
+        <record id="finance_manager_rule" model="ir.rule">
+            <field name="name">Finance Manager Rule</field>
+            <field name="model_id" ref="model_internal_sale_request"/>
+            <field name="domain_force">[('amount', '>=', 10000)]</field>
+            <field name="groups" eval="[(4, ref('finance_manager_user_group'))]"/>
         </record>
     </data>
 </odoo>

@@ -7,6 +7,7 @@ class HrEmployee(models.Model):
     task_count = fields.Integer(compute='compute_task_count')
     late_task_count = fields.Integer(compute='_compute_late_task_count')
     request_count = fields.Integer(compute='_compute_request_count')
+    task_ids = fields.One2many('employee.task', 'employee_id')
 
     def compute_task_count(self):
         for rec in self:
@@ -16,7 +17,7 @@ class HrEmployee(models.Model):
         for rec in self:
             rec.late_task_count = self.env['employee.task'].search_count([
                 ('employee_id', '=', rec.id),
-                ('is_late', '==', 1)
+                ('is_late', '=', 1)
             ])
 
     def _compute_request_count(self):

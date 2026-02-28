@@ -5,43 +5,43 @@
             <field name="name">Employee Tasks Report</field>
             <field name="model">hr.employee</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">employee_operations.report_employee_tasks</field>
+            <field name="report_name">employee_operations.employee_task_report_template</field>
             <field name="binding_model_id" ref="hr.model_hr_employee"/>
             <field name="binding_type">report</field>
             <field name="print_report_name">'Employee Tasks - %s' % (object.name)</field>
         </record>
 
         <template id="employee_task_report_template">
-            <t t-call="web.external_layout">
-                <t t-set="title">Employee Task Report</t>
-                <div class="page">
-                    <h2>Employee Task Report</h2>
-                    <t t-foreach="docs" t-as="employee">
-                        <h3><t t-esc="employee.name"/></h3>
-                        <table class="table table-condensed">
-                            <thead>
-                                <tr>
-                                    <th>Total Tasks</th>
-                                    <th>Completed Tasks</th>
-                                    <th>Late Tasks</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <t t-esc="len(employee.task_ids)"/>
-                                    </td>
-                                    <td>
-                                        <t t-esc="len(employee.task_ids.filtered(lambda t: t.state == 'done'))"/>
-                                    </td>
-                                    <td>
-                                        <t t-esc="len(employee.task_ids.filtered(lambda t: t.state != 'done' and t.due_date &lt;= fields.Date.today()))"/>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="employee">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <h2>Employee Task Report: <span t-field="employee.name"/></h2>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Total Tasks</th>
+                                        <th>Completed Tasks</th>
+                                        <th>Late Tasks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <t t-esc="len(employee.task_ids)"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="len(employee.task_ids.filtered(lambda t: t.state == 'done'))"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="len(employee.task_ids.filtered(lambda t: t.is_late))"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </t>
-                </div>
+                </t>
             </t>
         </template>
     </data>

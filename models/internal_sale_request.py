@@ -31,7 +31,7 @@ class InternalSalesRequest(models.Model):
         for rec in self:
             if rec.amount <= 5000:
                 rec.approval_level = 'manager'
-            elif 5000 < rec.amount < 10000:
+            elif rec.amount < 10000:
                 rec.approval_level = 'department_manager'
             else:
                 rec.approval_level = 'finance_manager'
@@ -42,7 +42,11 @@ class InternalSalesRequest(models.Model):
 
     def action_approved(self):
         for rec in self:
-            rec.state = 'approved'
+            rec.write({
+                'state': 'approved',
+                'approved_by_id': self.env.user.id,
+                'approval_date': fields.Datetime.now()
+            })
 
     def action_rejected(self):
         for rec in self:

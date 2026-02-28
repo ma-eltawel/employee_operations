@@ -2,6 +2,7 @@ from markupsafe import Markup
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.orm.decorators import readonly
 
 
 class EmployeeTask(models.Model):
@@ -33,7 +34,7 @@ class EmployeeTask(models.Model):
     actual_hours = fields.Float()
     progress = fields.Integer(compute='_compute_progress')
     is_late = fields.Boolean(compute='_compute_is_late', store=1)
-    parent_task_id = fields.Many2one('employee.task', ondelete='cascade')
+    parent_task_id = fields.Many2one('employee.task', readonly=1, ondelete='cascade')
     child_task_ids = fields.One2many('employee.task', 'parent_task_id')
     company_id = fields.Many2one('res.company')
 
@@ -56,6 +57,9 @@ class EmployeeTask(models.Model):
         for rec in self:
             if rec.actual_hours < 1:
                 raise ValidationError('Actual hours cannot be less than 1!')
+            if rec.parent_task_id:
+                if all(t.state == 'done' for t in rec.parent_task_id.child_task_ids):
+                    rec.parent_task_id.state = 'done'
             rec.state = 'done'
 
     def action_canceled(self):
@@ -67,29 +71,32 @@ class EmployeeTask(models.Model):
     #     for rec in self:
     #         if rec.state == 'in_progress' and rec.child_task_ids and all(child.state == 'done' for child in rec.child_task_ids):
     #             rec.state = 'done'
-
-    def write(self, vals):
-        res = super(EmployeeTask, self).write(vals)
-        for rec in self:
-            if rec.parent_task_id and rec.parent_task_id.state == 'in_progress':
-                parent = rec.parent_task_id
-                if parent.child_task_ids and all(c.state == 'done' for c in parent.child_task_ids):
-                    parent.state = 'done'
-        return res
+    #
+    # def write(self, vals):
+    #     res = super(EmployeeTask, self).write(vals)
+    #     for rec in self:
+    #         if rec.parent_task_id and rec.parent_task_id.state == 'in_progress':
+    #             parent = rec.parent_task_id
+    #             if parent.child_task_ids and all(c.state == 'done' for c in parent.child_task_ids):
+    #                 parent.state = 'done'
+    #     return res
 
     def daily_scheduled_job(self):
-        late_tasks = self.search([('state', '!=', 'done'), ('deadline', '<', fields.Date.today())])
+        late_tasks = self.search([('is_late', '=', 1)])
         for task in late_tasks:
-            if task.employee_id and task.employee_id.user_id:
+            manager = task.employee_id.parent_id
+            if manager and manager.user_id and manager.user_id.partner_id:
+                message = Markup(f"""
+                    <b>Alert: The task {task.name}</b> has passed its deadline {task.deadline}.<br/>
+                    Please follow up with employee <b>{task.employee_id.name}</b>.
+                """)
                 task.message_post(
-                    body=f"Task '{task.name}' is late!",
-                    subtype_xmlid="mail.mt_comment",
-                    partner_ids=[task.employee_id.user_id.partner_id.id]
+                    body = message,
+                    partner_ids = manager.user_id.partner_id.id
                 )
 
     def monthly_scheduled_job(self):
-        today = fields.Date.today()
-        first_day = today.replace(day=1)
+        first_day = fields.Date.today().replace(day=1)
         employees = self.search([])
         for employee in employees:
             task_count = self.env['employee.task'].search_count([
@@ -100,10 +107,8 @@ class EmployeeTask(models.Model):
                 ('employee_id', '=', employee.id),
                 ('create_date', '>=', first_day)
             ])
-            if not task_count and not request_count:
-                continue
             message = Markup(f"""
-                <b>Monthly Summary ({today.strftime('%B %Y')})</b>
+                <b>Monthly Summary ({first_day.strftime('%B %Y')})</b>
                 <ul>
                     <li>Tasks created: <b>{task_count}</b></li>
                     <li>Sales Requests: <b>{request_count}</b></li>
@@ -111,5 +116,5 @@ class EmployeeTask(models.Model):
             """)
             employee.message_post(
                 body = message,
-                subtype_xmlid = "mail.mt_note"
+                subtype_xmlid = "mail.mt_comment"
             )

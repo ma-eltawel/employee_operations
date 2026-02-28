@@ -37,7 +37,6 @@
                         </group>
                         <group>
                             <group string="General Info">
-                                <field name="description" readonly="state in ('canceled', 'done')"/>
                                 <field name="priority" readonly="state in ('canceled', 'done')"/>
                                 <field name="task_type" readonly="state in ('canceled', 'done')"/>
                                 <field name="deadline" readonly="state in ('canceled', 'done')"/>
@@ -46,13 +45,20 @@
                                 <field name="estimated_hours" readonly="state in ('canceled', 'done')"/>
                                 <field name="actual_hours" readonly="state in ('canceled', 'done')"/>
                                 <field name="progress" widget="progressbar"/>
-                                <field name="parent_task_id" readonly="state in ('canceled', 'done')" invisible="not parent_task_id" options="{'no_create': True}"/>
+                                <field name="parent_task_id" invisible="not parent_task_id"/>
                             </group>
                         </group>
                         <group>
-                            <field name="child_task_ids" readonly="state in ('canceled', 'done')"/>
                             <field name="company_id" readonly="state in ('canceled', 'done')"/>
                         </group>
+                        <notebook>
+                            <page string="Description">
+                                <field name="description" readonly="state in ('canceled', 'done')"/>
+                            </page>
+                            <page string="Subtasks" invisible="parent_task_id">
+                                <field name="child_task_ids" readonly="state in ('canceled', 'done')"/>
+                            </page>
+                        </notebook>
                     </sheet>
                     <chatter>
                         <field name="message_follower_ids"/>
@@ -67,7 +73,7 @@
             <field name="name">employee task kanban</field>
             <field name="model">employee.task</field>
             <field name="arch" type="xml">
-                <kanban>
+                <kanban default_group_by="state">
                     <field name="name"/>
                     <field name="employee_id"/>
                     <field name="priority"/>
@@ -145,7 +151,7 @@
         <record id="employee_task_action" model="ir.actions.act_window">
             <field name="name">Employee Task</field>
             <field name="res_model">employee.task</field>
-            <field name="context">{'search_default_group_state': 1}</field>
+            <field name="view_mode">list,form,kanban,pivot</field>
         </record>
     </data>
 </odoo>
