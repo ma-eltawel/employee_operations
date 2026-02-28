@@ -32,7 +32,7 @@ class EmployeeTask(models.Model):
     deadline = fields.Date(default=fields.Date.today())
     estimated_hours = fields.Float()
     actual_hours = fields.Float()
-    progress = fields.Integer(compute='_compute_progress')
+    progress = fields.Integer(compute='_compute_progress', store=1)
     is_late = fields.Boolean(compute='_compute_is_late', store=1)
     parent_task_id = fields.Many2one('employee.task', readonly=1, ondelete='cascade')
     child_task_ids = fields.One2many('employee.task', 'parent_task_id')
@@ -77,10 +77,10 @@ class EmployeeTask(models.Model):
         res = super().write(vals)
         parents = self.mapped('parent_task_id')
         if parents:
-            parents._check_and_complete_parent()
-
+            parents.check_and_complete_parent()
         return res
 
+    @api.model
     def daily_scheduled_job(self):
         late_tasks = self.search([('is_late', '=', 1)])
         for task in late_tasks:
@@ -92,9 +92,10 @@ class EmployeeTask(models.Model):
                 """)
                 task.message_post(
                     body = message,
-                    partner_ids = manager.user_id.partner_id.id
+                    partner_ids=[manager.user_id.partner_id.id]
                 )
 
+    @api.model
     def monthly_scheduled_job(self):
         first_day = fields.Date.today().replace(day=1)
         employees = self.search([])

@@ -23,7 +23,7 @@
             <field name="name">employee task wizard form</field>
             <field name="model">employee.task.wizard</field>
             <field name="arch" type="xml">
-                <form string="Employee Tasks">
+                <form string="Tasks">
                     <group>
                         <field name="employee_id"/>
                         <field name="task_count"/>
