@@ -2,7 +2,6 @@ from markupsafe import Markup
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.orm.decorators import readonly
 
 
 class EmployeeTask(models.Model):
@@ -10,8 +9,8 @@ class EmployeeTask(models.Model):
     _description = 'Employee Task Management'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(required=1)
-    employee_id = fields.Many2one('hr.employee', required=1)
+    name = fields.Char(required=True)
+    employee_id = fields.Many2one('hr.employee', required=True)
     description = fields.Text()
     priority = fields.Selection([
         ('low', 'Low'),
@@ -32,9 +31,9 @@ class EmployeeTask(models.Model):
     deadline = fields.Date(default=fields.Date.today())
     estimated_hours = fields.Float()
     actual_hours = fields.Float()
-    progress = fields.Integer(compute='_compute_progress', store=1)
-    is_late = fields.Boolean(compute='_compute_is_late', store=1)
-    parent_task_id = fields.Many2one('employee.task', readonly=1, ondelete='cascade')
+    progress = fields.Integer(compute='_compute_progress', store=True)
+    is_late = fields.Boolean(compute='_compute_is_late', store=True)
+    parent_task_id = fields.Many2one('employee.task', readonly=True, ondelete='cascade')
     child_task_ids = fields.One2many('employee.task', 'parent_task_id')
     company_id = fields.Many2one('res.company')
 
@@ -82,7 +81,7 @@ class EmployeeTask(models.Model):
 
     @api.model
     def daily_scheduled_job(self):
-        late_tasks = self.search([('is_late', '=', 1)])
+        late_tasks = self.search([('is_late', '=', True)])
         for task in late_tasks:
             manager = task.employee_id.parent_id
             if manager and manager.user_id and manager.user_id.partner_id:
@@ -98,7 +97,7 @@ class EmployeeTask(models.Model):
     @api.model
     def monthly_scheduled_job(self):
         first_day = fields.Date.today().replace(day=1)
-        employees = self.search([])
+        employees = self.env['hr.employee'].search([])
         for employee in employees:
             task_count = self.env['employee.task'].search_count([
                 ('employee_id', '=', employee.id),

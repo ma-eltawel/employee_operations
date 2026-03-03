@@ -17,7 +17,7 @@ class HrEmployee(models.Model):
         for rec in self:
             rec.late_task_count = self.env['employee.task'].search_count([
                 ('employee_id', '=', rec.id),
-                ('is_late', '=', 1)
+                ('is_late', '=', True)
             ])
 
     def _compute_request_count(self):

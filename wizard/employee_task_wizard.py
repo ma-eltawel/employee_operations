@@ -4,10 +4,10 @@ class EmployeeTaskWizard(models.TransientModel):
     _name = 'employee.task.wizard'
     _description = 'Employee Task Wizard'
 
-    employee_id = fields.Many2one('hr.employee', readonly=1)
-    task_count = fields.Integer(readonly=1)
-    late_task_count = fields.Integer(readonly=1)
-    request_count = fields.Integer(readonly=1)
+    employee_id = fields.Many2one('hr.employee', readonly=True)
+    task_count = fields.Integer(readonly=True)
+    late_task_count = fields.Integer(readonly=True)
+    request_count = fields.Integer(readonly=True)
 
     @api.model
     def default_get(self, fields_list):

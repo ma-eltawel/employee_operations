@@ -6,7 +6,7 @@ class InternalSalesRequest(models.Model):
     _name = 'internal.sale.request'
     _description = 'Internal Sales Request Management'
 
-    name = fields.Char(readonly=1, default='New')
+    name = fields.Char(readonly=True, default='New')
     employee_id = fields.Many2one('hr.employee')
     amount = fields.Float()
     reason = fields.Text()
@@ -21,9 +21,9 @@ class InternalSalesRequest(models.Model):
         ('department_manager', 'Department Manager'),
         ('finance_manager', 'Finance Manager')
     ],compute='_compute_approval_level')
-    approved_by_id = fields.Many2one('res.users', readonly=1)
-    approval_date = fields.Datetime(readonly=1)
-    approval_month = fields.Char(compute='_compute_approval_month', store=1)
+    approved_by_id = fields.Many2one('res.users', readonly=True)
+    approval_date = fields.Datetime(readonly=True)
+    approval_month = fields.Char(compute='_compute_approval_month', store=True)
     manager_comment = fields.Text()
 
     @api.depends('amount')

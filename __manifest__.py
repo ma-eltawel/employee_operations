@@ -2,6 +2,7 @@
     'name': 'Employee Operations',
     'author': 'Mahmoud Eltawel',
     'category': '',
+    'license': 'LGPL-3',
     'version': '19.0.1.0',
     'depends': ['base', 'hr', 'mail'],
     'data': [
