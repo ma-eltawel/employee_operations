@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="hr.view_employee_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//form//div[@name='button_box']" position="inside">
-                    <button name="action_open_employee_task" type="object" class="oe_stat_button" icon="fa-list-alt">
+                    <button name="action_open_task" type="object" class="oe_stat_button" icon="fa-list-alt">
                         <div class="o_stat_info">
                             Tasks
                             <span class="o_stat_value">
@@ -15,25 +15,23 @@
                             </span>
                         </div>
                     </button>
+                    <button name="action_open_late_task" type="object" class="oe_stat_button" icon="fa-ban">
+                        <div class="o_stat_info">
+                            Late Tasks
+                            <span class="o_stat_value">
+                                <field name="late_task_count"/>
+                            </span>
+                        </div>
+                    </button>
+                    <button name="action_open_request" type="object" class="oe_stat_button" icon="fa-share-square">
+                        <div class="o_stat_info">
+                            Requests
+                            <span class="o_stat_value">
+                                <field name="request_count"/>
+                            </span>
+                        </div>
+                    </button>
                 </xpath>
-            </field>
-        </record>
-
-        <record id="employee_task_wizard_view_form" model="ir.ui.view">
-            <field name="name">employee task wizard form</field>
-            <field name="model">employee.task.wizard</field>
-            <field name="arch" type="xml">
-                <form string="Tasks">
-                    <group>
-                        <field name="employee_id"/>
-                        <field name="task_count"/>
-                        <field name="late_task_count"/>
-                        <field name="request_count"/>
-                    </group>
-                    <footer>
-                        <button string="Close" special="cancel" class="btn-secondary"/>
-                    </footer>
-                </form>
             </field>
         </record>
     </data>

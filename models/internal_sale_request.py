@@ -20,7 +20,7 @@ class InternalSalesRequest(models.Model):
         ('manager', 'Manager'),
         ('department_manager', 'Department Manager'),
         ('finance_manager', 'Finance Manager')
-    ],compute='_compute_approval_level')
+    ],compute='_compute_approval_level', store=True)
     approved_by_id = fields.Many2one('res.users', readonly=True)
     approval_date = fields.Datetime(readonly=True)
     approval_month = fields.Char(compute='_compute_approval_month', store=True)

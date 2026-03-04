@@ -41,7 +41,7 @@ class EmployeeTask(models.Model):
     @api.depends('estimated_hours', 'actual_hours')
     def _compute_progress(self):
         for rec in self:
-            rec.progress = (rec.actual_hours / rec.estimated_hours) * 100 if rec.estimated_hours else 0.0
+            rec.progress = int(rec.actual_hours / rec.estimated_hours) * 100 if rec.estimated_hours else 0.0
 
     @api.depends('state', 'deadline')
     def _compute_is_late(self):
@@ -61,7 +61,7 @@ class EmployeeTask(models.Model):
                     raise ValidationError('All sub-tasks not Done yet!')
             rec.state = 'done'
             if rec.parent_task_id:
-                rec.parent_task_id._check_and_complete_parent()
+                rec.parent_task_id.check_and_complete_parent()
 
     def action_canceled(self):
         for rec in self:
@@ -93,28 +93,3 @@ class EmployeeTask(models.Model):
                     body = message,
                     partner_ids=[manager.user_id.partner_id.id]
                 )
-
-    @api.model
-    def monthly_scheduled_job(self):
-        first_day = fields.Date.today().replace(day=1)
-        employees = self.env['hr.employee'].search([])
-        for employee in employees:
-            task_count = self.env['employee.task'].search_count([
-                ('employee_id', '=', employee.id),
-                ('create_date', '>=', first_day)
-            ])
-            request_count = self.env['internal.sale.request'].search_count([
-                ('employee_id', '=', employee.id),
-                ('create_date', '>=', first_day)
-            ])
-            message = Markup(f"""
-                <b>Monthly Summary ({first_day.strftime('%B %Y')})</b>
-                <ul>
-                    <li>Tasks created: <b>{task_count}</b></li>
-                    <li>Sales Requests: <b>{request_count}</b></li>
-                </ul>
-            """)
-            employee.message_post(
-                body = message,
-                subtype_xmlid = "mail.mt_comment"
-            )
