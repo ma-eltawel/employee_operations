@@ -86,7 +86,7 @@ class EmployeeTask(models.Model):
         partner_ids = manager_users.mapped('partner_id.id')
         for task in late_tasks:
             message = Markup(f"""
-                <b>Alert: The task {task.name}</b> has passed its deadline {task.deadline}.<br/>
+                <b>Alert: The task ({task.name})</b> has passed its deadline {task.deadline}.<br/>
                 Please follow up with employee <b>{task.employee_id.name}</b>.
             """)
             task.message_post(
