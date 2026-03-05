@@ -152,7 +152,7 @@
             <field name="name">Employee Task</field>
             <field name="res_model">employee.task</field>
             <field name="view_mode">list,form,kanban,pivot</field>
-            <field name="context">{'group_by':'state'}</field>
+            <field name="context">{'search_default_group_state': 1}</field>
         </record>
     </data>
 </odoo>
