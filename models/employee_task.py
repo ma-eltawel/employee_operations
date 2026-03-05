@@ -82,14 +82,14 @@ class EmployeeTask(models.Model):
     @api.model
     def daily_scheduled_job(self):
         late_tasks = self.search([('is_late', '=', True)])
+        manager_users = self.env['res.users'].search([]).filtered(lambda u: u.has_group('employee_operations.manager_user_group'))
+        partner_ids = manager_users.mapped('partner_id.id')
         for task in late_tasks:
-            manager = task.employee_id.parent_id
-            if manager and manager.user_id and manager.user_id.partner_id:
-                message = Markup(f"""
-                    <b>Alert: The task {task.name}</b> has passed its deadline {task.deadline}.<br/>
-                    Please follow up with employee <b>{task.employee_id.name}</b>.
-                """)
-                task.message_post(
-                    body = message,
-                    partner_ids=[manager.user_id.partner_id.id]
-                )
+            message = Markup(f"""
+                <b>Alert: The task {task.name}</b> has passed its deadline {task.deadline}.<br/>
+                Please follow up with employee <b>{task.employee_id.name}</b>.
+            """)
+            task.message_post(
+                body=message,
+                partner_ids=partner_ids
+            )
